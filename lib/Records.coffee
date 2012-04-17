@@ -64,6 +64,24 @@ module.exports = class Records extends Schema
                 callback null, records
     ###
 
+    `rand(callback)`
+    ---------------
+    Return one records randomly.  This function
+    takes no other argument than the callback called on error or success.
+
+    ###
+    rand: (callback) ->
+        {redis} = @
+        {db, name, identifier} = @data
+        redis.srandmember "#{db}:#{name}_#{identifier}", (err, recordId) =>
+            multi = redis.multi()
+            multi.hgetall "#{db}:#{name}:#{recordId}"
+            multi.exec (err, records) =>
+                return callback err if err
+                @unserialize records
+                callback null, records
+                
+    ###
     `clear(callback)`
     -----------------
     Remove all the records and the references poiting to them. This function
